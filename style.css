@@ -1,0 +1,362 @@
+/* =====================
+   基本
+   ===================== */
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: black;
+
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+/* =====================
+   ステージ
+   ===================== */
+
+#stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* 揺れ対策 */
+}
+
+/* 背景画像 */
+#sceneImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* =====================
+   暗転
+   ===================== */
+
+#fadeLayer {
+  position: absolute;
+  inset: 0;
+  background: black;
+  opacity: 0;
+  transition: opacity 0.2s linear;
+  pointer-events: none;
+  z-index: 900;
+}
+
+/* =====================
+   フラッシュ（白光）
+   ===================== */
+
+#flashLayer {
+  position: absolute;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 880;
+}
+
+.flash-on {
+  animation: flashPulse 240ms ease-out 1;
+}
+
+@keyframes flashPulse {
+  0%   { opacity: 0; }
+  15%  { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* =====================
+   揺れエフェクト
+   ===================== */
+
+.shake-on {
+  animation: shakeJolt 320ms cubic-bezier(.2,.8,.2,1) 1;
+}
+
+@keyframes shakeJolt {
+  0%   { transform: translate(0,0) rotate(0); }
+  12%  { transform: translate(-6px, 2px) rotate(-0.6deg); }
+  24%  { transform: translate(7px, -3px) rotate(0.7deg); }
+  36%  { transform: translate(-5px, 3px) rotate(-0.5deg); }
+  48%  { transform: translate(6px, -2px) rotate(0.5deg); }
+  60%  { transform: translate(-4px, 2px) rotate(-0.4deg); }
+  100% { transform: translate(0,0) rotate(0); }
+}
+
+/* =====================
+   開始ボタン
+   ===================== */
+
+#startButton {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: black;
+  color: white;
+  font-size: 22px;
+  border: none;
+}
+
+/* =====================
+   会話ウインドウ
+   ===================== */
+
+#textWindow {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 30%;
+
+  background: rgba(0,0,0,0.3); /* ★透過30% */
+  color: white;
+
+  display: flex;
+  align-items: stretch;
+  z-index: 950;
+}
+
+#textWindow.isHidden {
+  display: none;
+}
+
+/* =====================
+   中央（名前＋本文）
+   ===================== */
+
+#textCenter {
+  flex: 1;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+#nameBox {
+  font-weight: bold;
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+
+#textBox {
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* =====================
+   前へ / 次へ ボタン
+   ===================== */
+
+#prevButton,
+#nextButton {
+  width: 56px;
+  border: none;
+  background: rgba(0,0,0,0.45);
+  color: white;
+  font-size: 22px;
+}
+
+#prevButton:active,
+#nextButton:active {
+  transform: scale(0.96);
+}
+
+/* =====================
+   テキスト表示切替ボタン
+   ===================== */
+
+#toggleTextButton {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 980;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: none;
+
+  background: rgba(0,0,0,0.55);
+  color: white;
+  font-size: 16px;
+}
+
+/* =====================
+   デバッグ（非表示でOK）
+   ===================== */
+
+#debug {
+  display: none;
+}
+
+/* =====================
+   推理オーバーレイ
+   ===================== */
+.deduceOverlay{
+  position:absolute;
+  inset:0;
+  z-index:2000;
+  background:rgba(0,0,0,0.55);
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding:12px;
+}
+.deduceOverlay.isHidden{ display:none; }
+
+.deducePanel{
+  width:min(980px, 100%);
+  max-height:90%;
+  background:rgba(0,0,0,0.88);
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:14px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+.deduceHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px 12px;
+  border-bottom:1px solid rgba(255,255,255,0.12);
+}
+.deduceQuestion{
+  color:#fff;
+  font-size:16px;
+  line-height:1.25;
+  font-weight:700;
+}
+.deduceClose{
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  border:0;
+  background:rgba(255,255,255,0.10);
+  color:#fff;
+  font-size:22px;
+}
+
+.deduceBody{
+  padding:12px 12px;
+  color:#fff;
+  font-size:16px;
+  line-height:1.7;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+  white-space:pre-wrap;
+}
+
+/* キーワード（タップ可能ワード） */
+.kw{
+  color:#8fe3ff;               /* 目立つ色 */
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor:pointer;
+  padding:0 2px;
+  border-radius:6px;
+}
+.kw.isPicked{
+  background:rgba(143,227,255,0.22);
+  outline:1px solid rgba(143,227,255,0.45);
+}
+
+/* フッター */
+.deduceFooter{
+  padding:12px 12px;
+  border-top:1px solid rgba(255,255,255,0.12);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.deducePicked{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.pickedLabel{ color:rgba(255,255,255,0.75); }
+
+.pickedChip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:88px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.22);
+  color:#fff;
+  background:rgba(255,255,255,0.06);
+  font-size:14px;
+}
+.pickedChip.isEmpty{
+  color:rgba(255,255,255,0.45);
+}
+
+.deduceStart{
+  height:44px;
+  border-radius:12px;
+  border:0;
+  font-size:16px;
+  font-weight:700;
+  color:#000;
+  background:#8fe3ff;
+}
+.deduceStart:disabled{
+  opacity:0.35;
+}
+
+/* 確認モーダル */
+.deduceConfirm{
+  position:absolute;
+  inset:0;
+  z-index:2100;
+  background:rgba(0,0,0,0.65);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+}
+.deduceConfirm.isHidden{ display:none; }
+
+.confirmPanel{
+  width:min(520px, 100%);
+  background:rgba(0,0,0,0.90);
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:14px;
+  padding:14px;
+  color:#fff;
+}
+.confirmText{
+  font-size:16px;
+  line-height:1.6;
+  margin-bottom:12px;
+  white-space:pre-wrap;
+}
+.confirmBtns{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+}
+.confirmBtns button{
+  height:40px;
+  border-radius:12px;
+  border:0;
+  padding:0 14px;
+  color:#fff;
+  background:rgba(255,255,255,0.12);
+}
+#confirmYes{
+  background:#8fe3ff;
+  color:#000;
+  font-weight:700;
+}
