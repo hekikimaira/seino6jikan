@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <!-- =====================
+         ① head / meta
+         ===================== -->
+    <meta charset="utf-8">
+    <meta name="viewport"
+    content="width=device-width,height=device-height,
+               initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>せいの</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    
+    <!-- =====================
+         ② style（CSS）
+         ===================== -->
+    <style>
+      /* ---------- ②-1 html, body ---------- */
+      html, body {
+        height: 100%;
+        margin: 0;
+        background: #000;
+        font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      }
+      
+      /* ---------- ②-2 stage ---------- */
+      #stage {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        user-select: none;
+        touch-action: manipulation;
+      }
+      
+      /* ---------- ②-3 bg（タイトル画像） ---------- */
+      #bg {
+        position: relative;
+        width: min(100vw, calc(100vh * var(--ratio)));
+        height: min(100vh, calc(100vw / var(--ratio)));
+        background: url("img/title.png") center / contain no-repeat;
+        overflow: hidden;
+      }
+      
+      /* ---------- ②-4 menu（右端・中央寄り） ---------- */
+      #menu {
+        position: absolute;
+        right: 2%;
+        top: 48%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+      }
+      
+      /* ---------- ②-5 item ---------- */
+      .item {
+        all: unset;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        color: rgba(255,255,255,.68);
+        font-size: 18px;
+        letter-spacing: .04em;
+        padding: 6px 10px;
+      }
+      .item:active { transform: scale(0.98); }
+      
+      /* ---------- ②-6 states ---------- */
+      .disabled { color: rgba(255,255,255,.18); cursor: default; }
+      .small { font-size: 16px; color: rgba(255,255,255,.48); }
+      
+      /* ---------- ②-7 sep ---------- */
+      .sep {
+        width: 140px;
+        height: 1px;
+        background: rgba(0,0,0,0.30);
+        margin: 4px 0;
+      }
+    </style>
+  </head>
+  
+  <body>
+    <!-- =====================
+         ③ body（HTML）
+         ===================== -->
+    <div id="stage">
+      <div id="bg">
+        <div id="menu">
+          <!-- ③-4-1 -->
+          <button class="item" id="m_se6">せいの６じかん</button>
+          
+          <!-- ③-4-2 / ③-4-3（未解禁：表示のみ） -->
+          <button class="item disabled" id="m_se12" aria-disabled="true">せいの１２じかん</button>
+          <button class="item disabled" id="m_se3" aria-disabled="true">せいの３じかん</button>
+          
+          <div class="sep"></div>
+          
+          <!-- ③-4-4 / ③-4-5 -->
+          <button class="item" id="m_continue">続きから</button>
+          <button class="item" id="m_memory">追憶</button>
+          
+          <div class="sep"></div>
+          
+          <!-- ③-4-6 -->
+          <button class="item small" id="m_settings">設定</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- =====================
+         ④ script（JS）
+         ===================== -->
+    <script>
+      // ---------------------
+      // ④-1 表示設定（画像比率）
+      // ※ title.png が 832x1216 ならこのまま
+      // ---------------------
+      document.documentElement.style.setProperty("--ratio", (832 / 1216).toString());
+      
+      // ---------------------
+      // ④-2 ① せいの６じかん（有効：game.htmlへ遷移）
+      // ---------------------
+      document.getElementById("m_se6").onclick = () => {
+        location.href = "game.html?scenario=umae";
+      };
+      
+      // ---------------------
+      // ④-3 ② せいの１２じかん（未解禁：コメントアウト）
+      // ---------------------
+      // document.getElementById("m_se12").onclick = () => {
+      //   location.href = "game.html?scenario=se12";
+      // };
+      
+      // ---------------------
+      // ④-4 ③ せいの３じかん（未解禁：コメントアウト）
+      // ---------------------
+      // document.getElementById("m_se3").onclick = () => {
+      //   location.href = "game.html?scenario=se3";
+      // };
+      
+      // ---------------------
+      // ④-5 ④ 続きから（未実装：コメントアウト）
+      // ---------------------
+      // document.getElementById("m_continue").onclick = () => {};
+      
+      // ---------------------
+      // ④-6 ⑤ 追憶（未実装：コメントアウト）
+      // ---------------------
+      // document.getElementById("m_memory").onclick = () => {};
+      
+      // ---------------------
+      // ④-7 ⑥ 設定（未実装：コメントアウト）
+      // ---------------------
+      // document.getElementById("m_settings").onclick = () => {};
+    </script>
+  </body>
+</html>

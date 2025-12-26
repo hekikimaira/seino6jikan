@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <!-- =====================
+       ① head / meta
+       ===================== -->
+    <meta charset="utf-8">
+    <meta name="viewport"
+    content="width=device-width,height=device-height,
+             initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>せいの - game</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    
+    <!-- =====================
+       ② style（CSS）
+       ===================== -->
+    <style>
+      /* ---------- ②-1 基本 ---------- */
+      html, body {
+        height: 100%;
+        margin: 0;
+        background: #000;
+        font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+        overflow: hidden;
+      }
+      
+      /* ---------- ②-2 ステージ（画面フィット枠） ---------- */
+      #stage {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        user-select: none;
+        touch-action: manipulation;
+      }
+      
+      /* ---------- ②-3 “ゲーム画面”をタイトル画像比率でフィット ---------- */
+      /* ここが「ウィンドがデカい」対策の本丸 */
+      #gameFrame {
+        position: relative;
+        width: min(100vw, calc(100vh * var(--ratio)));
+        height: min(100vh, calc(100vw / var(--ratio)));
+        overflow: hidden;
+        background: #000;
+      }
+      
+      /* ---------- ②-4 シーン画像 ---------- */
+      #sceneImage {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* 画像が欠けるなら cover / 余白が気になるなら cover */
+        background: #000;
+      }
+      
+      /* ---------- ②-5 フェード/フラッシュ ---------- */
+      #fadeLayer, #flashLayer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      #fadeLayer {
+        background: #000;
+        opacity: 0;
+        transition: opacity 200ms linear;
+      }
+      #flashLayer {
+        background: #fff;
+        opacity: 0;
+      }
+      .flash-on {
+        animation: flash 120ms ease-out;
+      }
+      @keyframes flash {
+        0% { opacity: 0; }
+        40% { opacity: 0.85; }
+        100% { opacity: 0; }
+      }
+      .shake-on {
+        animation: shake 220ms ease-in-out;
+      }
+      @keyframes shake {
+        0% { transform: translate(0,0); }
+        25% { transform: translate(-1.5%, 0.8%); }
+        50% { transform: translate(1.2%, -0.6%); }
+        75% { transform: translate(-0.8%, -1.0%); }
+        100% { transform: translate(0,0); }
+      }
+      
+      /* ---------- ②-6 テキスト窓（30%・可読性強化） ---------- */
+      #textWindow {
+        position: absolute;
+        left: 4%;
+        right: 4%;
+        bottom: 4%;
+        padding: 12px 14px;
+        border-radius: 14px;
+        
+        /* ★ 30% くらい */
+        background: rgba(0,0,0,.30);
+        
+        /* 透明度上げると境界が消えるので、薄い枠と影で支える */
+        border: 1px solid rgba(255,255,255,.10);
+        box-shadow: 0 10px 30px rgba(0,0,0,.35);
+        
+        color: rgba(255,255,255,.92);
+        backdrop-filter: blur(8px);
+        
+        max-height: 30%;
+        overflow: hidden;
+      }
+      
+      #nameBox {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 6px;
+        opacity: .95;
+        
+        /* ★ 背景が薄いほど影が効く */
+        text-shadow: 0 1px 2px rgba(0,0,0,.85);
+      }
+      
+      #textBox {
+        font-size: 15px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        overflow: auto;
+        max-height: 18vh;
+        padding-right: 4px;
+        
+        /* ★ 可読性 */
+        color: rgba(255,255,255,.95);
+        text-shadow: 0 1px 2px rgba(0,0,0,.85);
+      }
+
+      
+      /* ---------- ②-7 操作ボタン（小さめ） ---------- */
+      #uiBar {
+        position: absolute;
+        top: 3%;
+        right: 3%;
+        display: flex;
+        gap: 8px;
+        z-index: 5;
+      }
+      .uiBtn {
+        all: unset;
+        cursor: pointer;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(0,0,0,.45);
+        color: rgba(255,255,255,.85);
+        font-size: 13px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .uiBtn:active { transform: scale(0.98); }
+      
+      /* ---------- ②-8 開始ボタン ---------- */
+      #startButton {
+        position: absolute;
+        left: 50%;
+        top: 80%;
+        transform: translate(-50%, -50%);
+        padding: 12px 18px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.14);
+        color: rgba(255,255,255,.92);
+        font-weight: 700;
+        letter-spacing: .04em;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #startButton:active { transform: translate(-50%, -50%) scale(0.98); }
+      
+      /* ---------- ②-9 推理UI（いまは隠しておく：必要なら後で） ---------- */
+      #deduceOverlay, #deduceConfirm { display: none; }
+    </style>
+  </head>
+  
+  <body>
+    <!-- =====================
+       ③ body（HTML）
+       ===================== -->
+    <div id="stage">
+      <div id="gameFrame">
+        
+        <!-- ③-1 画像 -->
+        <img id="sceneImage" alt="scene" src="">
+        
+        <!-- ③-2 演出レイヤ -->
+        <div id="flashLayer"></div>
+        <div id="fadeLayer"></div>
+        
+        <!-- ③-3 UI -->
+        <div id="uiBar">
+          <button class="uiBtn" id="prevButton">戻る</button>
+          <button class="uiBtn" id="nextButton">次へ</button>
+          <button class="uiBtn" id="toggleTextButton">文字</button>
+        </div>
+        
+        <!-- ③-4 テキスト窓 -->
+        <div id="textWindow">
+          <div id="nameBox"></div>
+          <div id="textBox"></div>
+        </div>
+        
+        <!-- ③-5 開始 -->
+        <button id="startButton">開始</button>
+        
+        <!-- ③-6 audio -->
+        <audio id="bgm" loop playsinline></audio>
+        <audio id="rse" loop playsinline></audio>
+        <audio id="se" playsinline></audio>
+        <audio id="voice" playsinline></audio>
+        
+        <!-- ③-7 推理UI（未使用/後で） -->
+        <div id="deduceOverlay">
+          <div id="deduceQuestion"></div>
+          <div id="deduceBody"></div>
+          <button id="deduceStart"></button>
+          <button id="deduceClose"></button>
+          <div id="picked1"></div><div id="picked2"></div><div id="picked3"></div>
+        </div>
+        <div id="deduceConfirm">
+          <div id="confirmText"></div>
+          <button id="confirmYes"></button>
+          <button id="confirmNo"></button>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- =====================
+       ④ script（JS）
+       ===================== -->
+    <script>
+      // ---------------------
+      // ④-1 画面比率（タイトル画像と同じでOK）
+      // ※ title.png が 832x1216 ならこのまま
+      // ---------------------
+      document.documentElement.style.setProperty("--ratio", (832 / 1216).toString());
+      
+      // ---------------------
+      // ④-2 クエリから scenario を読む
+      // ---------------------
+      const params = new URLSearchParams(location.search);
+      const scenario = params.get("scenario") || "umae";
+      
+      // ---------------------
+      // ④-3 外部JS読込（config.js → game.js）
+      // ---------------------
+      const load = (src) => new Promise((resolve, reject) => {
+          const s = document.createElement("script");
+          s.src = src;
+          s.onload = resolve;
+          s.onerror = () => reject(new Error("load failed: " + src));
+          document.head.appendChild(s);
+      });
+      
+      (async () => {
+          try {
+            // 任意
+            try { await load("config.js"); } catch (_) {}
+            // 必須
+            await load("game.js");
+            
+            if (typeof window.bootGame !== "function") {
+              alert("bootGame が無い（game.js 側の書き出し失敗）");
+              return;
+            }
+            
+            // ④-4 起動（packs/se6/... を読ませる）
+            await window.bootGame({
+                packsRoot: "packs",
+                scenario,
+                saveKeyPrefix: scenario + "_",
+            });
+            
+            // ④-5 画像が空のまま検出（原因切り分け用）
+            setTimeout(() => {
+                const img = document.getElementById("sceneImage");
+                if (!img || !img.getAttribute("src")) {
+                  console.warn("sceneImage src が空。scenario.js の img 指定 or packPath を確認");
+                }
+            }, 600);
+            
+          } catch (e) {
+            alert("game 起動失敗: " + (e?.message ?? String(e)));
+            console.error(e);
+          }
+      })();
+    </script>
+  </body>
+</html>
+
